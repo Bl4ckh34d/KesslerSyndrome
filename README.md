@@ -1,8 +1,8 @@
+![Game Screenshot](assets/gameplay_screenshot.png)
+
 # 🚀 Kessler Syndrome - Space Debris Survival
 
 A vibe-coded, assetless, code-only space-themed endless runner built with Godot 4.4. Navigate through increasingly dense space debris while avoiding catastrophic collisions in this minimalist, procedurally generated experience.
-
-![Game Screenshot](assets/gameplay_screenshot.png)
 
 ## 🎮 Game Overview
 
