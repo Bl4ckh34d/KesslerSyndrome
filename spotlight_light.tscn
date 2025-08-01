@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="Gradient" id="Gradient_1"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1"]
+gradient = SubResource("Gradient_1")
+
+[node name="SpotlightLight" type="Light2D"]
+texture = SubResource("GradientTexture1D_1")
+color = Color(1, 0.95, 0.8, 1)
+energy = 100.0
+blend_mode = 1
+shadow_enabled = false
+light_mask = 2 

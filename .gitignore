@@ -1,0 +1,40 @@
+# Godot-specific ignores
+.godot/
+.import/
+
+# Build outputs
+*.exe
+*.pck
+*.zip
+*.tar.gz
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Godot 4 specific
+*.uid
+*.uid.bak
+
+# Export templates (if any)
+export_templates/
+
+# User-specific settings
+project.godot.bak
