@@ -1,16 +1,16 @@
 # 🚀 Kessler Syndrome - Space Debris Survival
 
-A challenging 2D sidescrolling space shooter built with Godot 4.4, where you navigate through increasingly dense space debris while avoiding catastrophic collisions.
+A vibe-coded, assetless, code-only space-themed endless runner built with Godot 4.4. Navigate through increasingly dense space debris while avoiding catastrophic collisions in this minimalist, procedurally generated experience.
 
 ![Game Screenshot](assets/gameplay_screenshot.png)
 
 ## 🎮 Game Overview
 
-**Kessler Syndrome** is a physics-based space survival game where you pilot a spaceship through a field of orbital debris. The game features:
+**Kessler Syndrome** is a vibe-coded, assetless endless runner where you pilot a spaceship through procedurally generated space debris. Built entirely with code and minimalism in mind, the game features:
 
-- **Dynamic Difficulty**: Obstacles become more numerous and complex over time
+- **Procedural Generation**: Endless, dynamically generated obstacle patterns
 - **Physics-Based Gameplay**: Realistic momentum, gravity, and collision physics
-- **Visual Effects**: Particle systems, dynamic lighting, and parallax backgrounds
+- **Code-Only Visuals**: All graphics generated programmatically with no external assets
 - **Progressive Challenge**: Survive as long as possible in an ever-increasingly hostile environment
 
 ## 🎯 How to Play
@@ -20,10 +20,10 @@ A challenging 2D sidescrolling space shooter built with Godot 4.4, where you nav
 - **R**: Restart after game over
 
 ### Objective
-- Navigate through space debris without colliding
-- Survive as long as possible
+- Navigate through procedurally generated space debris without colliding
+- Survive as long as possible in this endless runner
 - Your distance traveled is your score
-- Difficulty increases over time
+- Difficulty increases over time with more complex patterns
 
 ### Health System
 - **3 Hit Points**: Each collision reduces health
@@ -38,8 +38,10 @@ A challenging 2D sidescrolling space shooter built with Godot 4.4, where you nav
 - **Object Pooling**: Optimized performance for particle systems
 - **20-Layer Parallax**: Extreme depth and visual richness
 - **Physics-Based**: Realistic space physics with momentum and drag
+- **Assetless Design**: No external textures, sounds, or assets required
 
 ### Visual Systems
+- **Code-Generated Graphics**: All visuals created programmatically with no external assets
 - **Dynamic Color Scheme**: Debris and ship colors change over time
 - **Spotlight System**: Dynamic lighting in shadowed areas
 - **Particle Effects**: Explosions, sparks, smoke, and exhaust flames
@@ -47,6 +49,7 @@ A challenging 2D sidescrolling space shooter built with Godot 4.4, where you nav
 
 ### Gameplay Systems
 - **10 Obstacle Types**: Varied shapes and sizes for challenge
+- **Procedural Generation**: Endless, dynamically generated obstacle patterns
 - **Planet Gravity**: Realistic gravitational effects
 - **Shadow System**: Dynamic shadows near the planet
 - **Progressive Difficulty**: Obstacles spawn faster and rotate more over time
@@ -100,7 +103,7 @@ KesslerSyndrome/
 ## 🎨 Game Systems
 
 ### Spaceship Controller
-- **Triangle-shaped** spaceship with dynamic exhaust effects
+- **Code-generated triangle-shaped** spaceship with dynamic exhaust effects
 - **Physics-based movement** with momentum and screen boundaries
 - **Health system** with visual damage progression
 - **Particle systems** for damage feedback and explosions
@@ -113,6 +116,7 @@ KesslerSyndrome/
 
 ### Background System
 - **20-layer parallax** for extreme visual depth
+- **Procedurally generated** space environment
 - **Dynamic color scheme** that evolves over time
 - **Planet gravity** affecting player movement
 - **Shadow system** with dynamic spotlight activation
@@ -135,9 +139,9 @@ KesslerSyndrome/
 ## 🎯 Future Enhancements
 
 ### Planned Features
-- [ ] Sound effects and background music
+- [ ] Procedurally generated sound effects
 - [ ] Power-ups and special abilities
-- [ ] Multiple ship types
+- [ ] Multiple procedurally generated ship types
 - [ ] Leaderboard system
 - [ ] Mobile support
 - [ ] Multiplayer mode
@@ -167,8 +171,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [Godot Engine](https://godotengine.org/)
-- Inspired by classic space shooter games
+- Inspired by classic endless runners and minimalist game design
 - Special thanks to the Godot community for excellent documentation and support
+- A testament to what can be achieved with pure code and creativity
 
 ## 📞 Contact
 
