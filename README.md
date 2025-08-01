@@ -1,4 +1,4 @@
-![Game Screenshot](assets/gameplay_screenshot.png)
+![Game Screenshot](assets/Screenshot.png)
 
 # 🚀 Kessler Syndrome - Space Debris Survival
 
