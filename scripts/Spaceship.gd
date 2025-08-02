@@ -51,9 +51,10 @@ var speed_reduction_factor: float = 1.0  # 1.0 = full speed, 0.75 = 75% speed, 0
 var original_vertical_speed: float
 var original_horizontal_speed: float
 
-# Particle pooling system
-var spark_pool: Array[Polygon2D] = []
-var smoke_pool: Array[Polygon2D] = []
+# Particle pooling system using GenericPool
+const GenericPool = preload("res://scripts/utils/GenericPool.gd")
+var spark_pool: GenericPool
+var smoke_pool: GenericPool
 var max_pool_size: int = 100  # Maximum particles in each pool
 
 # Continuous emission timers
@@ -112,6 +113,10 @@ func _ready():
 	# Store original speeds for speed reduction system
 	original_vertical_speed = vertical_speed
 	original_horizontal_speed = horizontal_speed
+	
+	# Initialize particle pools using GenericPool
+	spark_pool = GenericPool.new(_create_spark_particle, _reset_spark_particle, max_pool_size)
+	smoke_pool = GenericPool.new(_create_smoke_particle, _reset_smoke_particle, max_pool_size)
 	
 	# Spaceship color updates removed
 
@@ -606,65 +611,57 @@ func get_world_scroll_speed() -> float:
 	return 80.0  # Default fallback speed
 
 func get_spark_from_pool() -> Polygon2D:
-	# Get a spark particle from the pool or create a new one
-	if spark_pool.size() > 0:
-		var spark = spark_pool.pop_back()
-		spark.visible = true
-		spark.scale = Vector2.ONE
-		spark.rotation = 0.0
-		return spark
-	else:
-		# Create new spark particle
-		var spark = Polygon2D.new()
-		# Create tiny circular spark particle
-		var spark_radius = randf_range(0.2, 0.8)
-		var spark_points = PackedVector2Array()
-		var segments = 6
-		
-		for j in range(segments):
-			var spark_angle = (j * PI * 2) / segments
-			spark_points.append(Vector2(cos(spark_angle) * spark_radius, sin(spark_angle) * spark_radius))
-		
-		spark.polygon = spark_points
-		return spark
+	return spark_pool.get_object()
+
+func _create_spark_particle() -> Polygon2D:
+	# Create new spark particle
+	var spark = Polygon2D.new()
+	# Create tiny circular spark particle
+	var spark_radius = randf_range(0.2, 0.8)
+	var spark_points = PackedVector2Array()
+	var segments = 6
+	
+	for j in range(segments):
+		var spark_angle = (j * PI * 2) / segments
+		spark_points.append(Vector2(cos(spark_angle) * spark_radius, sin(spark_angle) * spark_radius))
+	
+	spark.polygon = spark_points
+	return spark
+
+func _reset_spark_particle(spark: Polygon2D):
+	spark.visible = true
+	spark.scale = Vector2.ONE
+	spark.rotation = 0.0
 
 func get_smoke_from_pool() -> Polygon2D:
-	# Get a smoke particle from the pool or create a new one
-	if smoke_pool.size() > 0:
-		var smoke = smoke_pool.pop_back()
-		smoke.visible = true
-		smoke.scale = Vector2.ONE
-		smoke.rotation = 0.0
-		return smoke
-	else:
-		# Create new smoke particle
-		var smoke = Polygon2D.new()
-		# Create small round smoke bubble
-		var smoke_radius = randf_range(1.5, 3.0)
-		var smoke_points = PackedVector2Array()
-		var segments = 10
-		
-		for j in range(segments):
-			var smoke_angle = (j * PI * 2) / segments
-			smoke_points.append(Vector2(cos(smoke_angle) * smoke_radius, sin(smoke_angle) * smoke_radius))
-		
-		smoke.polygon = smoke_points
-		return smoke
+	return smoke_pool.get_object()
+
+func _create_smoke_particle() -> Polygon2D:
+	# Create new smoke particle
+	var smoke = Polygon2D.new()
+	# Create small round smoke bubble
+	var smoke_radius = randf_range(1.5, 3.0)
+	var smoke_points = PackedVector2Array()
+	var segments = 10
+	
+	for j in range(segments):
+		var smoke_angle = (j * PI * 2) / segments
+		smoke_points.append(Vector2(cos(smoke_angle) * smoke_radius, sin(smoke_angle) * smoke_radius))
+	
+	smoke.polygon = smoke_points
+	return smoke
+
+func _reset_smoke_particle(smoke: Polygon2D):
+	smoke.visible = true
+	smoke.scale = Vector2.ONE
+	smoke.rotation = 0.0
 
 func return_particle_to_pool(particle: Polygon2D, is_smoke: bool = false):
 	# Return particle to appropriate pool
 	if is_smoke:
-		if smoke_pool.size() < max_pool_size:
-			particle.visible = false
-			smoke_pool.append(particle)
-		else:
-			particle.queue_free()
+		smoke_pool.return_object(particle)
 	else:
-		if spark_pool.size() < max_pool_size:
-			particle.visible = false
-			spark_pool.append(particle)
-		else:
-			particle.queue_free()
+		spark_pool.return_object(particle)
 
 func handle_continuous_emissions(delta: float):
 	# Don't emit new particles if ship is dead
@@ -973,8 +970,8 @@ func reset():
 	horizontal_speed = original_horizontal_speed
 	
 	# Clear particle pools
-	spark_pool.clear()
-	smoke_pool.clear()
+	spark_pool.clear_pool()
+	smoke_pool.clear_pool()
 	
 	# Re-enable screen boundaries for new game
 	boundaries_enabled = true

@@ -14,7 +14,8 @@ extends Node2D
 
 # Simple physics-based system
 var active_obstacles: Array = []
-var obstacle_pool: Array = []
+const GenericPool = preload("res://scripts/utils/GenericPool.gd")
+var obstacle_pool: GenericPool
 var pool_size: int = 30
 var screen_width: float
 var screen_height: float
@@ -69,54 +70,30 @@ func _ready():
 	# Set up fixed spawn and despawn zones with deferred call to ensure viewport is ready
 	call_deferred("setup_fixed_zones")
 	
-	# Initialize object pool
-	expand_pool(pool_size)
+	# Initialize object pool using GenericPool - defer initialization to ensure obstacle_scene is ready
+	call_deferred("initialize_pool")
 	
 	# Start with no obstacles - they will spawn gradually over time
 	# No longer call create_initial_obstacles()
 
 func setup_fixed_zones():
-	# Fixed spawn zone: 300 pixels to the right of screen (well outside view)
-	spawn_zone_right = screen_width + 300
+	# Fixed spawn zone: 100 pixels to the right of screen (closer for testing)
+	spawn_zone_right = screen_width + 150
 	
 	# Fixed despawn zone: 1000 pixels to the left of screen (much further out)
 	despawn_zone_left = -1000
-
-func expand_pool(expansion_size: int):
-	# Optimize pool expansion by creating objects in batches
-	var batch_size = 5
-	for batch in range(0, expansion_size, batch_size):
-		var current_batch_size = min(batch_size, expansion_size - batch)
-		for i in range(current_batch_size):
-			var obstacle = obstacle_scene.instantiate()
-			if not obstacle:
-				continue
-			
-			# CRITICAL: Set safe position and ensure obstacle is completely hidden
-			obstacle.position = Vector2(-2000, -2000)  # Far off-screen position
-			obstacle.visible = false
-			obstacle.set_physics_process(false)
-			obstacle.set_process(false)
-			
-			# Disable physics and collision to prevent any interactions
-			if obstacle.has_method("set_physics_enabled"):
-				obstacle.set_physics_enabled(false)
-			
-			# CRITICAL: Set obstacle color to match current debris scheme
-			var background_parallax = get_node_or_null("/root/Main/GameWorld/Background")
-			if background_parallax and background_parallax.has_method("get_debris_color"):
-				var unified_color = background_parallax.get_debris_color()
-				obstacle.obstacle_color = unified_color
-				obstacle.original_color = unified_color
-				if obstacle.visual_polygon:
-					obstacle.visual_polygon.color = unified_color
-					obstacle.visual_polygon.set_meta("original_color", unified_color)
-			
-			# Add to scene tree but keep it hidden and inactive
-			add_child(obstacle)
-			obstacle_pool.append(obstacle)
 	
-	pool_size += expansion_size
+	print("DEBUG: Screen width: ", screen_width, " Spawn zone: ", spawn_zone_right, " Despawn zone: ", despawn_zone_left)
+
+func initialize_pool():
+	# Initialize object pool using GenericPool - ensure obstacle_scene is ready
+	if obstacle_scene:
+		obstacle_pool = GenericPool.new(_create_obstacle, _reset_obstacle, pool_size)
+		print("Obstacle pool initialized with size: ", pool_size)
+	else:
+		print("ERROR: obstacle_scene not loaded, cannot initialize pool")
+
+# Pool expansion is now handled automatically by GenericPool
 
 func _process(delta):
 	time_elapsed += delta
@@ -290,33 +267,56 @@ func spawn_single_obstacle(spawn_x: float):
 	active_obstacles.append(obstacle)
 
 func get_obstacle_from_pool() -> Node2D:
-	if obstacle_pool.size() > 0:
-		var obstacle = obstacle_pool.pop_back()
-		
-		# CRITICAL: Check if obstacle is still valid (not freed)
-		if not is_instance_valid(obstacle):
-			return get_obstacle_from_pool()
-		
-		# CRITICAL: Ensure obstacle is properly reset before use
-		obstacle.visible = false  # Keep hidden until properly positioned
-		obstacle.set_physics_process(false)
-		obstacle.set_process(false)
-		
-		# Reset position to safe location
-		obstacle.position = Vector2(-2000, -2000)
-		obstacle.linear_velocity = Vector2.ZERO
-		
-		# Color is set when obstacle is created, no update needed
-		
-		# CRITICAL: Add obstacle back to scene tree if it was removed
-		if not obstacle.get_parent():
-			add_child(obstacle)
-		
-		return obstacle
-	else:
-		# Expand pool if needed
-		expand_pool(10)
-		return get_obstacle_from_pool()
+	return obstacle_pool.get_object()
+
+func _create_obstacle() -> Node2D:
+	if not obstacle_scene:
+		print("ERROR: obstacle_scene not available in _create_obstacle")
+		return null
+	
+	var obstacle = obstacle_scene.instantiate()
+	if not obstacle:
+		print("ERROR: Failed to instantiate obstacle from scene")
+		return null
+	
+	# CRITICAL: Set safe position and ensure obstacle is completely hidden
+	obstacle.position = Vector2(-2000, -2000)  # Far off-screen position
+	obstacle.visible = false
+	obstacle.set_physics_process(false)
+	obstacle.set_process(false)
+	
+	# Disable physics and collision to prevent any interactions
+	if obstacle.has_method("set_physics_enabled"):
+		obstacle.set_physics_enabled(false)
+	
+	# CRITICAL: Set obstacle color to match current debris scheme
+	var background_parallax = get_node_or_null("/root/Main/GameWorld/Background")
+	if background_parallax and background_parallax.has_method("get_debris_color"):
+		var unified_color = background_parallax.get_debris_color()
+		obstacle.obstacle_color = unified_color
+	
+	# CRITICAL: Add obstacle to scene tree so it can be rendered
+	add_child(obstacle)
+	
+	return obstacle
+
+func _reset_obstacle(obstacle: Node2D):
+	# CRITICAL: Check if obstacle is still valid (not freed)
+	if not is_instance_valid(obstacle):
+		return
+	
+	# CRITICAL: Ensure obstacle is properly reset before use
+	obstacle.visible = false  # Keep hidden until properly positioned
+	obstacle.set_physics_process(false)
+	obstacle.set_process(false)
+	
+	# Reset position to safe location
+	obstacle.position = Vector2(-2000, -2000)
+	obstacle.linear_velocity = Vector2.ZERO
+	
+	# CRITICAL: Add obstacle back to scene tree if it was removed
+	if not obstacle.get_parent():
+		add_child(obstacle)
 
 func return_obstacle_to_pool(obstacle: Node2D):
 	# CRITICAL: Check if obstacle is still valid before returning to pool
@@ -327,11 +327,8 @@ func return_obstacle_to_pool(obstacle: Node2D):
 	if obstacle.get_parent():
 		obstacle.get_parent().remove_child(obstacle)
 	
-	obstacle.visible = false
-	obstacle.set_physics_enabled(false)
-	obstacle.position = Vector2.ZERO
-	obstacle.linear_velocity = Vector2.ZERO
-	obstacle_pool.append(obstacle)
+	if obstacle_pool:
+		obstacle_pool.return_object(obstacle)
 
 func get_obstacle_configuration() -> Dictionary:
 	var max_rotation = min(PI/2, (current_difficulty / max_difficulty) * PI/2)
@@ -421,10 +418,8 @@ func reset():
 	force_clear_all_obstacles()
 	
 	# AGGRESSIVE: Free all obstacles in pool and clear it completely
-	for obstacle in obstacle_pool:
-		if is_instance_valid(obstacle):
-			obstacle.queue_free()
-	obstacle_pool.clear()
+	if obstacle_pool:
+		obstacle_pool.clear_pool()
 	
 	# Reset variables
 	current_difficulty = base_difficulty
@@ -441,7 +436,7 @@ func reset():
 	# CRITICAL: Reinitialize the object pool with fresh obstacles
 	# This ensures new obstacles are created with the current color scheme
 	if obstacle_scene:
-		expand_pool(pool_size)
+		initialize_pool()
 	
 	# Ensure physics system is active
 	set_physics_process(true)
